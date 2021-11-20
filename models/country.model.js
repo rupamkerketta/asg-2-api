@@ -13,7 +13,7 @@ const countrySchema = mongoose.Schema({
 		type: Number,
 		required: true
 	},
-	yearWiseValue: [
+	yearWiseValues: [
 		{
 			year: {
 				type: Number,
@@ -22,12 +22,18 @@ const countrySchema = mongoose.Schema({
 			categories: [
 				{
 					value: { type: Number, required: true },
-					category: { type: String, required: true }
+					category: { type: Number, required: true }
 				}
 			]
 		}
 	],
-	categories: [{ type: String }]
+	categories: [
+		{
+			categoryId: { type: Number, required: true },
+			category: { type: String, required: true },
+			categoryTags: [{ type: String, required: true }]
+		}
+	]
 })
 
 const Country = mongoose.model('Country', countrySchema)

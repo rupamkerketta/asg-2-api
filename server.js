@@ -28,9 +28,11 @@ app.get('/', (req, res) => {
 })
 
 // Routes
+const countriesRoute = require('./routes/countries.route')
 const countryRoute = require('./routes/country.route')
 
-app.use('/api/countries', countryRoute)
+app.use('/api/v1/countries', countriesRoute)
+app.use('/api/v1/country', countryRoute)
 
 console.log(process.env.DB_CONNECTION_STR)
 
