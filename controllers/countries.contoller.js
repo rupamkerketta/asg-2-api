@@ -4,15 +4,12 @@ module.exports = {
 	countries: async (req, res) => {
 		try {
 			const countriesData = await countryModel.find({})
-
 			const filteredData = countriesData.map((country) => {
-
 				return {
 					_id: country._id,
 					countryName: country.countryName,
 					startYear: country.startYear,
-					endYear: country.endYear,
-					categories: country.categories.map((category) => category.category)
+					endYear: country.endYear
 				}
 			})
 			res.send(filteredData)
