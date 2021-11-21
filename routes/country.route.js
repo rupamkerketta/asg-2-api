@@ -35,6 +35,8 @@ router.get(
 
 router.get('/:id/time/all-years', countryCTRL.getAllYearsInfo)
 
+router.get('/:id/time/start-year/q', countryCTRL.getSEYearInfoFiltered)
+
 // router.get('/:id/q', (req, res) => {
 // 	try {
 // 		const queries = req.query
