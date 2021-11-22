@@ -245,6 +245,25 @@ module.exports = {
 					endYearInfoFiltered
 				})
 				return
+			case 'all-years':
+				const allYearFilteredRecords = country.yearWiseValues.map(
+					(yearInfo, index) => {
+						return getFilteredInfo({
+							yearIndex: index,
+							country,
+							keyList,
+							operationType,
+							andSearchResult,
+							orSearchResult,
+							SE: 'all-years'
+						})
+					}
+				)
+				res.send({
+					_id: country._id,
+					countryName: country.countryName,
+					allYearFilteredRecords
+				})
 		}
 	},
 	getAllYearsInfo: async (req, res) => {
@@ -275,16 +294,12 @@ const getFilteredInfo = ({
 	orSearchResult,
 	SE
 }) => {
-	// 0 : for starting year
-	// arr.length - 1 : for ending year
-
 	let filteredRecords
 	switch (operationType) {
 		case 'OR':
 			filteredRecords = country.yearWiseValues[yearIndex].categories
 				.map((categoryInfo) => {
 					if (orSearchResult.includes(categoryInfo.category)) {
-						console.log(categoryInfo)
 						return {
 							value: categoryInfo.value,
 							category: country.categories.find(
@@ -294,11 +309,11 @@ const getFilteredInfo = ({
 					}
 				})
 				.filter((record) => typeof record !== 'undefined')
+			break
 		case 'AND':
 			filteredRecords = country.yearWiseValues[yearIndex].categories
 				.map((categoryInfo) => {
 					if (andSearchResult.includes(categoryInfo.category)) {
-						console.log(categoryInfo)
 						return {
 							value: categoryInfo.value,
 							category: country.categories.find(
@@ -308,6 +323,7 @@ const getFilteredInfo = ({
 					}
 				})
 				.filter((record) => typeof record !== 'undefined')
+			break
 		default:
 			filteredRecords = country.yearWiseValues[yearIndex].categories
 				.map((categoryInfo) => {
@@ -326,18 +342,18 @@ const getFilteredInfo = ({
 
 	let noRecordsMsg = ''
 	if (yearIndex === 0) {
-		noRecordsMsg = 'starting'
+		noRecordsMsg =
+			'No records found for the starting year for the given parameters'
 	} else if (yearIndex === country.yearWiseValues.length - 1) {
-		noRecordsMsg = 'ending'
+		noRecordsMsg =
+			'No records found for the ending year for the given parameters'
 	} else {
-		noRecordsMsg = ''
+		noRecordsMsg = 'No records found for the given parameters'
 	}
 
 	if (filteredRecords.length === 0) {
 		filteredRecords = {
-			message: `No records found for the ${noRecordsMsg} year for the given parameters`,
-			parameters: keyList,
-			operationType
+			message: noRecordsMsg
 		}
 	}
 
@@ -359,6 +375,11 @@ const getFilteredInfo = ({
 					year: country.endYear,
 					filteredRecords
 				}
+			}
+		case 'all-years':
+			return {
+				year: country.yearWiseValues[yearIndex].year,
+				filteredRecords
 			}
 		default:
 			return {
