@@ -20,7 +20,8 @@
 	"homepage": "https://github.com/rupamkerketta/asg-2-api#readme",
 	"dependencies": {
 		"express": "^4.17.1",
-		"mongoose": "^6.0.13"
+		"mongoose": "^6.0.13",
+		"validator": "^13.7.0"
 	},
 	"devDependencies": {
 		"dotenv": "^10.0.0",

@@ -30,8 +30,7 @@ const countrySchema = mongoose.Schema({
 	categories: [
 		{
 			categoryId: { type: Number, required: true },
-			category: { type: String, required: true },
-			categoryTags: [{ type: String, required: true }]
+			category: { type: String, required: true }
 		}
 	]
 })

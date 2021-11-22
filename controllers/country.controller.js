@@ -44,6 +44,11 @@ module.exports = {
 			const countryId = req.params.id
 			const country = await countryModel.findById(countryId)
 
+			if (!country) {
+				res.status(404).send({ message: 'Country not found!!' })
+				return
+			}
+
 			res.send({
 				_id: country._id,
 				countryName: country.countryName,
@@ -110,7 +115,6 @@ module.exports = {
 	},
 	getSEYearInfoFiltered: async (req, res) => {
 		let keywords = []
-		console.log(typeof req.query.key)
 		if (typeof req.query.key === 'object') {
 			console.log('[key (array)]')
 			keywords.push(...req.query.key)
@@ -158,12 +162,10 @@ module.exports = {
 					})
 				}
 			})
-			console.log(orKeyIds)
 			return [...new Set(orKeyIds)]
 		}
 
 		const orSearchResult = orKeySearch(keyList)
-		console.log(orSearchResult)
 
 		// AND OPERATION
 		const andKeySearch = (keyList) => {
@@ -179,9 +181,7 @@ module.exports = {
 			})
 			return andKeyIds
 		}
-
 		const andSearchResult = andKeySearch(keyList)
-		console.log(andSearchResult)
 
 		let filteredRecords
 		const yearWiseLength = country.yearWiseValues.length
@@ -191,7 +191,6 @@ module.exports = {
 				filteredRecords = getFilteredInfo({
 					yearIndex: 0,
 					country,
-					keyList,
 					operationType,
 					andSearchResult,
 					orSearchResult,
@@ -206,7 +205,6 @@ module.exports = {
 				filteredRecords = getFilteredInfo({
 					yearIndex: yearWiseLength - 1,
 					country,
-					keyList,
 					operationType,
 					andSearchResult,
 					orSearchResult,
@@ -221,7 +219,6 @@ module.exports = {
 				const startYearInfoFiltered = getFilteredInfo({
 					yearIndex: 0,
 					country,
-					keyList,
 					operationType,
 					andSearchResult,
 					orSearchResult,
@@ -231,7 +228,6 @@ module.exports = {
 				const endYearInfoFiltered = getFilteredInfo({
 					yearIndex: yearWiseLength - 1,
 					country,
-					keyList,
 					operationType,
 					andSearchResult,
 					orSearchResult,
@@ -251,7 +247,6 @@ module.exports = {
 						return getFilteredInfo({
 							yearIndex: index,
 							country,
-							keyList,
 							operationType,
 							andSearchResult,
 							orSearchResult,
@@ -288,7 +283,6 @@ module.exports = {
 const getFilteredInfo = ({
 	yearIndex,
 	country,
-	keyList,
 	operationType,
 	andSearchResult,
 	orSearchResult,
