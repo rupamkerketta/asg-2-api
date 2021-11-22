@@ -44,6 +44,7 @@ module.exports = {
 			const countryId = req.params.id
 			const country = await countryModel.findById(countryId)
 
+			// Check 404
 			if (!country) {
 				res.status(404).send({ message: 'Country not found!!' })
 				return
@@ -66,6 +67,12 @@ module.exports = {
 			const SE = req.SE
 			const countryId = req.params.id
 			const country = await countryModel.findById(countryId)
+
+			// Check 404
+			if (!country) {
+				res.status(404).send({ message: 'Country not found!!' })
+				return
+			}
 
 			let startYearCategories = getStartYearCategories(country)
 			let endYearCategories = getEndYearCategories(country)
@@ -116,7 +123,6 @@ module.exports = {
 	getSEYearInfoFiltered: async (req, res) => {
 		let keywords = []
 		if (typeof req.query.key === 'object') {
-			console.log('[key (array)]')
 			keywords.push(...req.query.key)
 		}
 
@@ -129,6 +135,11 @@ module.exports = {
 		const countryId = req.params.id
 		const country = await countryModel.findById(countryId)
 
+		// Check 404
+		if (!country) {
+			res.status(404).send({ message: 'Country not found!!' })
+			return
+		}
 		// Get all the available keys for the country
 		const availableKeys = () => {
 			const arrTemp = []
@@ -265,6 +276,12 @@ module.exports = {
 		try {
 			const countryId = req.params.id
 			const country = await countryModel.findById(countryId)
+
+			// Check 404
+			if (!country) {
+				res.status(404).send({ message: 'Country not found!!' })
+				return
+			}
 
 			let allYearsInfo = getAllYearsProcessed(country)
 

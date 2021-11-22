@@ -1,4 +1,5 @@
 const express = require('express')
+const mongoose = require('mongoose')
 const router = express.Router()
 const { isHexadecimal } = require('validator')
 
@@ -8,7 +9,11 @@ const countryCTRL = require('../controllers/country.controller')
 // ID validation middleware
 const isValidId = (req, res, next) => {
 	const id = req.params.id
-	if (!isHexadecimal(id) || !id.length === 24) {
+	if (
+		!isHexadecimal(id) ||
+		!id.length === 24 ||
+		!mongoose.Types.ObjectId.isValid(id)
+	) {
 		res.status(400).send({ errMessage: 'Bad input - Invalid Id' })
 		return
 	}
