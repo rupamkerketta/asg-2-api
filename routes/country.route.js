@@ -35,16 +35,41 @@ router.get(
 
 router.get('/:id/time/all-years', countryCTRL.getAllYearsInfo)
 
-router.get('/:id/time/start-year/q', countryCTRL.getSEYearInfoFiltered)
+// Filtered options
+router.get(
+	'/:id/time/start-year/q',
+	(req, res, next) => {
+		req.SE = 'start-year'
+		next()
+	},
+	countryCTRL.getSEYearInfoFiltered
+)
 
-// router.get('/:id/q', (req, res) => {
-// 	try {
-// 		const queries = req.query
-// 		res.send(queries)
-// 	} catch (err) {
-// 		console.log(err)
-// 		res.status(500).send({ errMessage: 'Internal Server Error!!' })
-// 	}
-// })
+router.get(
+	'/:id/time/end-year/q',
+	(req, res, next) => {
+		req.SE = 'end-year'
+		next()
+	},
+	countryCTRL.getSEYearInfoFiltered
+)
+
+router.get(
+	'/:id/time/start-and-end-year/q',
+	(req, res, next) => {
+		req.SE = 'start-and-end-year'
+		next()
+	},
+	countryCTRL.getSEYearInfoFiltered
+)
+
+router.get(
+	'/:id/time/all-years/q',
+	(req, res, next) => {
+		req.SE = 'all-years'
+		next()
+	},
+	countryCTRL.getSEYearInfoFiltered
+)
 
 module.exports = router

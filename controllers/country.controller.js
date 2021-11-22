@@ -121,16 +121,131 @@ module.exports = {
 		}
 		const operationType = req.query.operationType
 
-		// 0. Check and filter (for start, end and all years)
-		// 1. Start year
-		// 2. End year
-		// 3. All years
-		// 4. Create a middleware for checking the query
+		// Country Id
+		const countryId = req.params.id
+		const country = await countryModel.findById(countryId)
 
-		res.send({
-			keywords,
-			operationType
-		})
+		// Get all the available keys for the country
+		const availableKeys = () => {
+			const arrTemp = []
+			country.categories.forEach((category) => {
+				arrTemp.push(...category.category.split('_'))
+			})
+			return [...new Set(arrTemp)]
+		}
+
+		const getKeyList = (keywordArr) => {
+			const allKeys = availableKeys()
+			return keywordArr.map((key) => {
+				return {
+					key,
+					valid: allKeys.includes(key)
+				}
+			})
+		}
+
+		const keyList = getKeyList(keywords)
+
+		// OR operation
+		const orKeySearch = (keyList) => {
+			let orKeyIds = []
+			keyList.forEach((keyInstance) => {
+				if (keyInstance.valid) {
+					country.categories.forEach((categoryInstance) => {
+						if (categoryInstance.category.includes(keyInstance.key)) {
+							orKeyIds.push(categoryInstance.categoryId)
+						}
+					})
+				}
+			})
+			console.log(orKeyIds)
+			return [...new Set(orKeyIds)]
+		}
+
+		const orSearchResult = orKeySearch(keyList)
+		console.log(orSearchResult)
+
+		// AND OPERATION
+		const andKeySearch = (keyList) => {
+			let andKeyIds = []
+			country.categories.forEach((categoryInstance) => {
+				if (
+					keyList.every((keyInstance) =>
+						categoryInstance.category.includes(keyInstance.key)
+					)
+				) {
+					andKeyIds.push(categoryInstance.categoryId)
+				}
+			})
+			return andKeyIds
+		}
+
+		const andSearchResult = andKeySearch(keyList)
+		console.log(andSearchResult)
+
+		let filteredRecords
+		const yearWiseLength = country.yearWiseValues.length
+
+		switch (req.SE) {
+			case 'start-year':
+				filteredRecords = getFilteredInfo({
+					yearIndex: 0,
+					country,
+					keyList,
+					operationType,
+					andSearchResult,
+					orSearchResult,
+					SE: req.SE
+				})
+
+				res.send({
+					...filteredRecords
+				})
+				return
+			case 'end-year':
+				filteredRecords = getFilteredInfo({
+					yearIndex: yearWiseLength - 1,
+					country,
+					keyList,
+					operationType,
+					andSearchResult,
+					orSearchResult,
+					SE: req.SE
+				})
+
+				res.send({
+					...filteredRecords
+				})
+				return
+			case 'start-and-end-year':
+				const startYearInfoFiltered = getFilteredInfo({
+					yearIndex: 0,
+					country,
+					keyList,
+					operationType,
+					andSearchResult,
+					orSearchResult,
+					SE: 'start-year'
+				}).startYearInfoFiltered
+
+				const endYearInfoFiltered = getFilteredInfo({
+					yearIndex: yearWiseLength - 1,
+					country,
+					keyList,
+					operationType,
+					andSearchResult,
+					orSearchResult,
+					SE: 'end-year'
+				}).endYearInfoFiltered
+
+				res.send({
+					_id: country._id,
+					countryName: country.countryName,
+					startYearInfoFiltered,
+					endYearInfoFiltered
+				})
+				return
+		}
 	},
 	getAllYearsInfo: async (req, res) => {
 		try {
@@ -148,5 +263,106 @@ module.exports = {
 			console.log(err)
 			res.status(500).send({ errMessage: 'Internal Server Error!!' })
 		}
+	}
+}
+
+const getFilteredInfo = ({
+	yearIndex,
+	country,
+	keyList,
+	operationType,
+	andSearchResult,
+	orSearchResult,
+	SE
+}) => {
+	// 0 : for starting year
+	// arr.length - 1 : for ending year
+
+	let filteredRecords
+	switch (operationType) {
+		case 'OR':
+			filteredRecords = country.yearWiseValues[yearIndex].categories
+				.map((categoryInfo) => {
+					if (orSearchResult.includes(categoryInfo.category)) {
+						console.log(categoryInfo)
+						return {
+							value: categoryInfo.value,
+							category: country.categories.find(
+								(c) => c.categoryId === categoryInfo.category
+							).category
+						}
+					}
+				})
+				.filter((record) => typeof record !== 'undefined')
+		case 'AND':
+			filteredRecords = country.yearWiseValues[yearIndex].categories
+				.map((categoryInfo) => {
+					if (andSearchResult.includes(categoryInfo.category)) {
+						console.log(categoryInfo)
+						return {
+							value: categoryInfo.value,
+							category: country.categories.find(
+								(c) => c.categoryId === categoryInfo.category
+							).category
+						}
+					}
+				})
+				.filter((record) => typeof record !== 'undefined')
+		default:
+			filteredRecords = country.yearWiseValues[yearIndex].categories
+				.map((categoryInfo) => {
+					if (orSearchResult.includes(categoryInfo.category)) {
+						console.log(categoryInfo)
+						return {
+							value: categoryInfo.value,
+							category: country.categories.find(
+								(c) => c.categoryId === categoryInfo.category
+							).category
+						}
+					}
+				})
+				.filter((record) => typeof record !== 'undefined')
+	}
+
+	let noRecordsMsg = ''
+	if (yearIndex === 0) {
+		noRecordsMsg = 'starting'
+	} else if (yearIndex === country.yearWiseValues.length - 1) {
+		noRecordsMsg = 'ending'
+	} else {
+		noRecordsMsg = ''
+	}
+
+	if (filteredRecords.length === 0) {
+		filteredRecords = {
+			message: `No records found for the ${noRecordsMsg} year for the given parameters`,
+			parameters: keyList,
+			operationType
+		}
+	}
+
+	switch (SE) {
+		case 'start-year':
+			return {
+				_id: country._id,
+				countryName: country.countryName,
+				startYearInfoFiltered: {
+					year: country.startYear,
+					filteredRecords
+				}
+			}
+		case 'end-year':
+			return {
+				_id: country._id,
+				countryName: country.countryName,
+				endYearInfoFiltered: {
+					year: country.endYear,
+					filteredRecords
+				}
+			}
+		default:
+			return {
+				errMessage: 'Default case!!'
+			}
 	}
 }
