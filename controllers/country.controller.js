@@ -66,6 +66,8 @@ const getKeyList = (keywordArr, country) => {
 // OR operation
 const orKeySearch = (keyList, country) => {
 	let orKeyIds = []
+
+	// Only add the keys which exist in the country category list.
 	keyList.forEach((keyInstance) => {
 		if (keyInstance.exists) {
 			country.categories.forEach((categoryInstance) => {
@@ -81,15 +83,20 @@ const orKeySearch = (keyList, country) => {
 // AND OPERATION
 const andKeySearch = (keyList, country) => {
 	let andKeyIds = []
-	country.categories.forEach((categoryInstance) => {
-		if (
-			keyList.every((keyInstance) =>
-				categoryInstance.category.includes(keyInstance.key)
-			)
-		) {
-			andKeyIds.push(categoryInstance.categoryId)
-		}
-	})
+
+	// Check if every key provided exists or not.
+	// Only then proceed with the next step.
+	if (keyList.every((keyInstance) => keyInstance.exists)) {
+		country.categories.forEach((categoryInstance) => {
+			if (
+				keyList.every((keyInstance) =>
+					categoryInstance.category.includes(keyInstance.key)
+				)
+			) {
+				andKeyIds.push(categoryInstance.categoryId)
+			}
+		})
+	}
 	return andKeyIds
 }
 
@@ -207,6 +214,20 @@ module.exports = {
 		const orSearchResult = orKeySearch(keyList, country)
 		const andSearchResult = andKeySearch(keyList, country)
 
+		// If both the lists are empty
+		if (orSearchResult.length === 0 && andSearchResult.length === 0) {
+			res.send({
+				_id: country._id,
+				countryName: country.countryName,
+				filteredRecords: {
+					message: 'No records found for the given parameters',
+					operationType,
+					keys: keyList
+				}
+			})
+			return
+		}
+
 		let filteredRecords
 		const yearWiseLength = country.yearWiseValues.length
 
@@ -216,6 +237,7 @@ module.exports = {
 					yearIndex: 0,
 					country,
 					operationType,
+					keyList,
 					andSearchResult,
 					orSearchResult,
 					SE: req.SE
@@ -230,6 +252,7 @@ module.exports = {
 					yearIndex: yearWiseLength - 1,
 					country,
 					operationType,
+					keyList,
 					andSearchResult,
 					orSearchResult,
 					SE: req.SE
@@ -244,6 +267,7 @@ module.exports = {
 					yearIndex: 0,
 					country,
 					operationType,
+					keyList,
 					andSearchResult,
 					orSearchResult,
 					SE: 'start-year'
@@ -253,6 +277,7 @@ module.exports = {
 					yearIndex: yearWiseLength - 1,
 					country,
 					operationType,
+					keyList,
 					andSearchResult,
 					orSearchResult,
 					SE: 'end-year'
@@ -283,6 +308,7 @@ module.exports = {
 					countryName: country.countryName,
 					allYearFilteredRecords
 				})
+				return
 		}
 	},
 	getAllYearsInfo: async (req, res) => {
@@ -314,6 +340,7 @@ const getFilteredInfo = ({
 	yearIndex,
 	country,
 	operationType,
+	keyList,
 	andSearchResult,
 	orSearchResult,
 	SE
@@ -321,47 +348,58 @@ const getFilteredInfo = ({
 	let filteredRecords
 	switch (operationType) {
 		case 'OR':
-			filteredRecords = country.yearWiseValues[yearIndex].categories
-				.map((categoryInfo) => {
-					if (orSearchResult.includes(categoryInfo.category)) {
-						return {
-							value: categoryInfo.value,
-							category: country.categories.find(
-								(c) => c.categoryId === categoryInfo.category
-							).category
+			if (orSearchResult.length === 0) {
+				filteredRecords = []
+			} else {
+				filteredRecords = country.yearWiseValues[yearIndex].categories
+					.map((categoryInfo) => {
+						if (orSearchResult.includes(categoryInfo.category)) {
+							return {
+								value: categoryInfo.value,
+								category: country.categories.find(
+									(c) => c.categoryId === categoryInfo.category
+								).category
+							}
 						}
-					}
-				})
-				.filter((record) => typeof record !== 'undefined')
+					})
+					.filter((record) => typeof record !== 'undefined')
+			}
 			break
 		case 'AND':
-			filteredRecords = country.yearWiseValues[yearIndex].categories
-				.map((categoryInfo) => {
-					if (andSearchResult.includes(categoryInfo.category)) {
-						return {
-							value: categoryInfo.value,
-							category: country.categories.find(
-								(c) => c.categoryId === categoryInfo.category
-							).category
+			if (andSearchResult.length === 0) {
+				filteredRecords = []
+			} else {
+				filteredRecords = country.yearWiseValues[yearIndex].categories
+					.map((categoryInfo) => {
+						if (andSearchResult.includes(categoryInfo.category)) {
+							return {
+								value: categoryInfo.value,
+								category: country.categories.find(
+									(c) => c.categoryId === categoryInfo.category
+								).category
+							}
 						}
-					}
-				})
-				.filter((record) => typeof record !== 'undefined')
+					})
+					.filter((record) => typeof record !== 'undefined')
+			}
 			break
 		default:
-			filteredRecords = country.yearWiseValues[yearIndex].categories
-				.map((categoryInfo) => {
-					if (orSearchResult.includes(categoryInfo.category)) {
-						console.log(categoryInfo)
-						return {
-							value: categoryInfo.value,
-							category: country.categories.find(
-								(c) => c.categoryId === categoryInfo.category
-							).category
+			if (orSearchResult.length === 0) {
+				filteredRecords = []
+			} else {
+				filteredRecords = country.yearWiseValues[yearIndex].categories
+					.map((categoryInfo) => {
+						if (orSearchResult.includes(categoryInfo.category)) {
+							return {
+								value: categoryInfo.value,
+								category: country.categories.find(
+									(c) => c.categoryId === categoryInfo.category
+								).category
+							}
 						}
-					}
-				})
-				.filter((record) => typeof record !== 'undefined')
+					})
+					.filter((record) => typeof record !== 'undefined')
+			}
 	}
 
 	let noRecordsMsg = ''
@@ -377,7 +415,8 @@ const getFilteredInfo = ({
 
 	if (filteredRecords.length === 0) {
 		filteredRecords = {
-			message: noRecordsMsg
+			message: noRecordsMsg,
+			operationType
 		}
 	}
 
@@ -388,6 +427,7 @@ const getFilteredInfo = ({
 				countryName: country.countryName,
 				startYearInfoFiltered: {
 					year: country.startYear,
+					keyList,
 					filteredRecords
 				}
 			}
@@ -397,12 +437,14 @@ const getFilteredInfo = ({
 				countryName: country.countryName,
 				endYearInfoFiltered: {
 					year: country.endYear,
+					keyList,
 					filteredRecords
 				}
 			}
 		case 'all-years':
 			return {
 				year: country.yearWiseValues[yearIndex].year,
+				keyList,
 				filteredRecords
 			}
 		default:
