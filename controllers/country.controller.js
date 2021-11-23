@@ -1,5 +1,7 @@
 const countryModel = require('../models/country.model')
 
+// ----------------- Non-Query Utils -------------------
+
 const getStartYearCategories = (country) => {
 	return country.yearWiseValues[0].categories.map((c) => {
 		return {
@@ -37,6 +39,61 @@ const getAllYearsProcessed = (country) => {
 		}
 	})
 }
+
+// -----------------------------------------------------
+
+// ---------------- Query Utils ------------------------
+
+// Get all the available keys for the country
+const availableKeys = (country) => {
+	const arrTemp = []
+	country.categories.forEach((category) => {
+		arrTemp.push(...category.category.split('_'))
+	})
+	return [...new Set(arrTemp)]
+}
+
+const getKeyList = (keywordArr, country) => {
+	const allKeys = availableKeys(country)
+	return keywordArr.map((key) => {
+		return {
+			key,
+			exists: allKeys.includes(key)
+		}
+	})
+}
+
+// OR operation
+const orKeySearch = (keyList, country) => {
+	let orKeyIds = []
+	keyList.forEach((keyInstance) => {
+		if (keyInstance.exists) {
+			country.categories.forEach((categoryInstance) => {
+				if (categoryInstance.category.includes(keyInstance.key)) {
+					orKeyIds.push(categoryInstance.categoryId)
+				}
+			})
+		}
+	})
+	return [...new Set(orKeyIds)]
+}
+
+// AND OPERATION
+const andKeySearch = (keyList, country) => {
+	let andKeyIds = []
+	country.categories.forEach((categoryInstance) => {
+		if (
+			keyList.every((keyInstance) =>
+				categoryInstance.category.includes(keyInstance.key)
+			)
+		) {
+			andKeyIds.push(categoryInstance.categoryId)
+		}
+	})
+	return andKeyIds
+}
+
+// -----------------------------------------------------
 
 module.exports = {
 	getCountryInfo: async (req, res) => {
@@ -121,11 +178,15 @@ module.exports = {
 		}
 	},
 	getSEYearInfoFiltered: async (req, res) => {
+		// Array for storing all the keywords with their metadata
 		let keywords = []
+
+		// If multiple keywords are provided
 		if (typeof req.query.key === 'object') {
 			keywords.push(...req.query.key)
 		}
 
+		// If only a single keyword is provided
 		if (typeof req.query.key === 'string') {
 			keywords.push(req.query.key)
 		}
@@ -140,59 +201,11 @@ module.exports = {
 			res.status(404).send({ message: 'Country not found!!' })
 			return
 		}
-		// Get all the available keys for the country
-		const availableKeys = () => {
-			const arrTemp = []
-			country.categories.forEach((category) => {
-				arrTemp.push(...category.category.split('_'))
-			})
-			return [...new Set(arrTemp)]
-		}
+		const keyList = getKeyList(keywords, country)
 
-		const getKeyList = (keywordArr) => {
-			const allKeys = availableKeys()
-			return keywordArr.map((key) => {
-				return {
-					key,
-					valid: allKeys.includes(key)
-				}
-			})
-		}
-
-		const keyList = getKeyList(keywords)
-
-		// OR operation
-		const orKeySearch = (keyList) => {
-			let orKeyIds = []
-			keyList.forEach((keyInstance) => {
-				if (keyInstance.valid) {
-					country.categories.forEach((categoryInstance) => {
-						if (categoryInstance.category.includes(keyInstance.key)) {
-							orKeyIds.push(categoryInstance.categoryId)
-						}
-					})
-				}
-			})
-			return [...new Set(orKeyIds)]
-		}
-
-		const orSearchResult = orKeySearch(keyList)
-
-		// AND OPERATION
-		const andKeySearch = (keyList) => {
-			let andKeyIds = []
-			country.categories.forEach((categoryInstance) => {
-				if (
-					keyList.every((keyInstance) =>
-						categoryInstance.category.includes(keyInstance.key)
-					)
-				) {
-					andKeyIds.push(categoryInstance.categoryId)
-				}
-			})
-			return andKeyIds
-		}
-		const andSearchResult = andKeySearch(keyList)
+		// 'OR' & 'AND' search results for the keywords provided
+		const orSearchResult = orKeySearch(keyList, country)
+		const andSearchResult = andKeySearch(keyList, country)
 
 		let filteredRecords
 		const yearWiseLength = country.yearWiseValues.length
