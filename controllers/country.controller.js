@@ -106,7 +106,10 @@ module.exports = {
 	getCountryInfo: async (req, res) => {
 		try {
 			const countryId = req.params.id
-			const country = await countryModel.findById(countryId)
+			const country = await countryModel.findById(
+				countryId,
+				'-yearWiseValues -categories._id -categories.categoryId'
+			)
 
 			// Check 404
 			if (!country) {
@@ -126,11 +129,67 @@ module.exports = {
 			res.status(500).send({ errMessage: 'Internal Server Error!!' })
 		}
 	},
+	getCountryYearInfo: async (req, res) => {
+		try {
+			const countryId = req.params.id
+			const country = await countryModel.findOne({ id: countryId }).select({
+				countryName: 1,
+				categories: 1,
+				yearWiseValues: { $elemMatch: { year: req.params.year } }
+			})
+
+			// Check 404
+			if (!country) {
+				res.status(404).send({ message: 'Country not found!!' })
+				return
+			}
+
+			if (
+				country.yearWiseValues.length !== 1 ||
+				country.yearWiseValues.length === 0
+			) {
+				res.status(404).send({
+					_id: country._id,
+					countryName: country.countryName,
+					yearInfo: {
+						year: req.params.year,
+						message: 'Year info not found!'
+					}
+				})
+				return
+			}
+
+			const yearInfoProcessed = country.yearWiseValues[0].categories.map(
+				(c) => {
+					return {
+						value: c.value,
+						category: country.categories.find(
+							(cc) => cc.categoryId === c.category
+						).category
+					}
+				}
+			)
+
+			res.send({
+				_id: country._id,
+				countryName: country.countryName,
+				yearInfo: {
+					year: req.params.year,
+					categories: yearInfoProcessed
+				}
+			})
+		} catch (err) {
+			console.log(err)
+			res.status(500).send({ errMessage: 'Internal Server Error!!' })
+		}
+	},
 	getSEYearInfo: async (req, res) => {
 		try {
 			const SE = req.SE
 			const countryId = req.params.id
-			const country = await countryModel.findById(countryId)
+			const country = await countryModel
+				.findById(countryId)
+				.select('-yearsList -yearWiseValues._id -yearWiseValues.categories._id')
 
 			// Check 404
 			if (!country) {
@@ -201,7 +260,11 @@ module.exports = {
 
 		// Country Id
 		const countryId = req.params.id
-		const country = await countryModel.findById(countryId)
+		const country = await countryModel
+			.findById(countryId)
+			.select(
+				'-yearsList -categories._id -yearWiseValues._id -yearWisevalues.category._id'
+			)
 
 		// Check 404
 		if (!country) {
@@ -216,7 +279,7 @@ module.exports = {
 
 		// If both the lists are empty
 		if (orSearchResult.length === 0 && andSearchResult.length === 0) {
-			res.send({
+			res.status(404).send({
 				_id: country._id,
 				countryName: country.countryName,
 				filteredRecords: {
@@ -242,11 +305,21 @@ module.exports = {
 					orSearchResult,
 					SE: req.SE
 				})
+				console.log(filteredRecords.startYearInfoFiltered)
 
-				res.send({
-					...filteredRecords
-				})
-				return
+				if (
+					'message' in filteredRecords.startYearInfoFiltered.filteredRecords
+				) {
+					res.status(404).send({
+						...filteredRecords
+					})
+					return
+				} else {
+					res.send({
+						...filteredRecords
+					})
+					return
+				}
 			case 'end-year':
 				filteredRecords = getFilteredInfo({
 					yearIndex: yearWiseLength - 1,
@@ -258,10 +331,17 @@ module.exports = {
 					SE: req.SE
 				})
 
-				res.send({
-					...filteredRecords
-				})
-				return
+				if ('message' in filteredRecords.endYearInfoFiltered.filteredRecords) {
+					res.status(404).send({
+						...filteredRecords
+					})
+					return
+				} else {
+					res.send({
+						...filteredRecords
+					})
+					return
+				}
 			case 'start-and-end-year':
 				const startYearInfoFiltered = getFilteredInfo({
 					yearIndex: 0,
@@ -283,13 +363,27 @@ module.exports = {
 					SE: 'end-year'
 				}).endYearInfoFiltered
 
-				res.send({
-					_id: country._id,
-					countryName: country.countryName,
-					startYearInfoFiltered,
-					endYearInfoFiltered
-				})
-				return
+				if (
+					'message' in startYearInfoFiltered &&
+					'message' in endYearInfoFiltered
+				) {
+					res.status(404).send({
+						_id: country._id,
+						countryName: country.countryName,
+						startYearInfoFiltered,
+						endYearInfoFiltered
+					})
+					return
+				} else {
+					res.send({
+						_id: country._id,
+						countryName: country.countryName,
+						startYearInfoFiltered,
+						endYearInfoFiltered
+					})
+					return
+				}
+
 			case 'all-years':
 				const allYearFilteredRecords = country.yearWiseValues.map(
 					(yearInfo, index) => {
@@ -303,18 +397,30 @@ module.exports = {
 						})
 					}
 				)
-				res.send({
-					_id: country._id,
-					countryName: country.countryName,
-					allYearFilteredRecords
-				})
-				return
+
+				if ('message' in filteredRecords.filteredRecords) {
+					res.status(404).send({
+						_id: country._id,
+						countryName: country.countryName,
+						allYearFilteredRecords
+					})
+					return
+				} else {
+					res.send({
+						_id: country._id,
+						countryName: country.countryName,
+						allYearFilteredRecords
+					})
+					return
+				}
 		}
 	},
 	getAllYearsInfo: async (req, res) => {
 		try {
 			const countryId = req.params.id
-			const country = await countryModel.findById(countryId)
+			const country = await countryModel
+				.findById(countryId)
+				.select('-yearsList -yearWiseValues._id -yearWiseValues.category._id')
 
 			// Check 404
 			if (!country) {

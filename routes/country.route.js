@@ -1,7 +1,7 @@
 const express = require('express')
 const mongoose = require('mongoose')
 const router = express.Router()
-const { isHexadecimal } = require('validator')
+const { isHexadecimal, isInt } = require('validator')
 
 // Controllers
 const countryCTRL = require('../controllers/country.controller')
@@ -17,6 +17,33 @@ const isValidId = (req, res, next) => {
 		res.status(400).send({ errMessage: 'Bad input - Invalid Id' })
 		return
 	}
+	next()
+}
+
+// Year validation middleware
+const isValidYear = (req, res, next) => {
+	if (!('year' in req.params)) {
+		res
+			.status(400)
+			.send({ errMessage: 'Bad input - provide a valid year as a param' })
+		return
+	}
+
+	if (!isInt(req.params.year)) {
+		res
+			.status(400)
+			.send({ errMessage: 'Bad input - provide a valid year as a param' })
+		return
+	}
+
+	req.params.year = parseInt(req.params.year)
+
+	const d = new Date()
+	if (req.params.year < 1990 || req.params.year > d.getFullYear()) {
+		res.status(400).send({ errMessage: 'Bad input - Out of range' })
+		return
+	}
+
 	next()
 }
 
@@ -135,6 +162,13 @@ router.get(
 		next()
 	},
 	countryCTRL.getSEYearInfoFiltered
+)
+
+router.get(
+	'/:id/year-info/:year',
+	isValidId,
+	isValidYear,
+	countryCTRL.getCountryYearInfo
 )
 
 module.exports = router
