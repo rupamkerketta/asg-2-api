@@ -1,11 +1,7 @@
 const mongoose = require('mongoose')
-// const connectionURL = `mongodb://${MONGO_IP}:${MONGO_PORT}/?authSource=admin`
 
-const connect = async (
-	{ connectionURL, mongoUsername, mongoPassword },
-	callback
-) => {
-	// When successfully connected
+const connect = async ({ connectionURL }, callback) => {
+	// When connected successfully
 	mongoose.connection.on('connected', function () {
 		console.log(`[mongoose] Connected to the Database '${this.name}'...`)
 		callback()
@@ -17,14 +13,9 @@ const connect = async (
 	})
 
 	try {
-		await mongoose.connect(
-			connectionURL,
-			{ user: mongoUsername, pass: mongoPassword },
-			{
-				useUnifiedTopology: true,
-				useFindAndModify: false
-			}
-		)
+		await mongoose.connect(connectionURL, {
+			useUnifiedTopology: true
+		})
 	} catch (err) {
 		// If the connection throws an error
 		console.log(`[mongoose] ${err}`)

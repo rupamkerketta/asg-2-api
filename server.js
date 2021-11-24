@@ -34,13 +34,9 @@ const countryRoute = require('./routes/country.route')
 app.use('/api/v1/countries', countriesRoute)
 app.use('/api/v1/country', countryRoute)
 
-console.log(process.env.DB_CONNECTION_STR)
-
 const connectionURL = process.env.DB_CONNECTION_STR
-const mongoUsername = process.env.MONGO_USERNAME
-const mongoPassword = process.env.MONGO_PASSWORD
 
-db.connect({ connectionURL, mongoUsername, mongoPassword }, () => {
+db.connect({ connectionURL }, () => {
 	app.listen(PORT, () =>
 		console.log(`[express] Server running on PORT ${PORT}`)
 	)
