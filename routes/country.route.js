@@ -61,7 +61,7 @@ const checkQueryParams = (req, res, next) => {
 	// key array check (mandatory)
 	if (
 		!keys.includes('key') ||
-		!typeof queryParams.key === 'object' ||
+		!(typeof queryParams.key === 'object') ||
 		!queryParams.key.every((key) => key.length !== 0)
 	) {
 		res.status(400).send({ errMessage: 'Invalid query params' })
@@ -79,9 +79,9 @@ const checkQueryParams = (req, res, next) => {
 			res.status(400).send({ errMessage: 'Invalid query params' })
 			return
 		}
+		req.query.operationType = req.query.operationType.toUpperCase()
 	}
 
-	req.query.operationType = req.query.operationType.toUpperCase()
 	next()
 }
 

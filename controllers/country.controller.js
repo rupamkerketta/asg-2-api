@@ -305,10 +305,10 @@ module.exports = {
 					orSearchResult,
 					SE: req.SE
 				})
-				console.log(filteredRecords.startYearInfoFiltered)
 
 				if (
-					'message' in filteredRecords.startYearInfoFiltered.filteredRecords
+					filteredRecords.startYearInfoFiltered.filteredRecords.length ===
+					undefined
 				) {
 					res.status(404).send({
 						...filteredRecords
@@ -331,7 +331,10 @@ module.exports = {
 					SE: req.SE
 				})
 
-				if ('message' in filteredRecords.endYearInfoFiltered.filteredRecords) {
+				if (
+					filteredRecords.endYearInfoFiltered.filteredRecords.length ===
+					undefined
+				) {
 					res.status(404).send({
 						...filteredRecords
 					})
@@ -364,8 +367,8 @@ module.exports = {
 				}).endYearInfoFiltered
 
 				if (
-					'message' in startYearInfoFiltered &&
-					'message' in endYearInfoFiltered
+					startYearInfoFiltered.filteredRecords.length === undefined &&
+					endYearInfoFiltered.filteredRecords.length === undefined
 				) {
 					res.status(404).send({
 						_id: country._id,
@@ -393,22 +396,34 @@ module.exports = {
 							operationType,
 							andSearchResult,
 							orSearchResult,
+							keyList,
 							SE: 'all-years'
 						})
 					}
 				)
 
-				if ('message' in filteredRecords.filteredRecords) {
+				if (
+					allYearFilteredRecords.every(
+						(record) => record.filteredRecords.length === undefined
+					)
+				) {
 					res.status(404).send({
 						_id: country._id,
 						countryName: country.countryName,
-						allYearFilteredRecords
+						keyList,
+						allYearFilteredRecords: {
+							filteredRecords: {
+								message: 'No records found for the given params',
+								operationType
+							}
+						}
 					})
 					return
 				} else {
 					res.send({
 						_id: country._id,
 						countryName: country.countryName,
+						keyList,
 						allYearFilteredRecords
 					})
 					return
@@ -550,9 +565,9 @@ const getFilteredInfo = ({
 		case 'all-years':
 			return {
 				year: country.yearWiseValues[yearIndex].year,
-				keyList,
 				filteredRecords
 			}
+
 		default:
 			return {
 				errMessage: 'Default case!!'
