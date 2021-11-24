@@ -144,10 +144,7 @@ module.exports = {
 				return
 			}
 
-			if (
-				country.yearWiseValues.length !== 1 ||
-				country.yearWiseValues.length === 0
-			) {
+			if (country.yearWiseValues.length === 0) {
 				res.status(404).send({
 					_id: country._id,
 					countryName: country.countryName,
