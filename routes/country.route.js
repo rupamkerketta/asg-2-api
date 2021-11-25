@@ -85,7 +85,7 @@ const checkQueryParams = (req, res, next) => {
 	next()
 }
 
-router.get('/:id', countryCTRL.getCountryInfo)
+router.get('/:id', isValidId, countryCTRL.getCountryInfo)
 
 router.get(
 	'/:id/time/start-year',

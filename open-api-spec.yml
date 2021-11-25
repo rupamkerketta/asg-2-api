@@ -20,11 +20,17 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Countries'
+                '500':
+                  description: 'Internal Server Error!'
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/InternalServerErrorSchema'
 
     /country/{countryId}:
         get:
             summary: Get the country info
-            description: List of all countries with their name, startYear, endYear, unique _id adn all the available categories
+            description: Country info with countryName, startYear, endYear, unique _id and all the available categories
             parameters:
                 - name: countryId
                   in: path
@@ -35,11 +41,76 @@ paths:
                       example: '619e44b754824b8370d646da'
             responses:
                 '200':
+                    description: 'Country info with the specific country ID'
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/CountryInfo'
+                '404':
+                  description: 'Country ID does not exists!'
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/Country404Schema'
+                '400':
+                  description: 'Bad user input in params or query'
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/BadInputSchema'
+                '500':
+                  description: 'Internal Server Error!'
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/BadInputSchema'
+
+    /country/{countryId}/year-info/{year}:
+        get:
+            summary: Get the country info with a specific year
+            description: Year information if exists for all the categories for the given country id.
+            parameters:
+                - name: countryId
+                  in: path
+                  required: true
+                  description: Country ID 
+                  schema:
+                      type: string
+                      example: '619e44b754824b8370d646da'
+                - name: year
+                  in: path
+                  required: true
+                  description: Search year for the country
+                  schema:
+                    type: integer
+                    example: 2011
+            responses:
+                '200':
                     description: 'Successfull list of all countries with their available category list'
                     content:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/CountryInfo'
+                '404':
+                  description: 'Country ID/Year does not exists!'
+                  content:
+                    application/json:
+                      schema:
+                        oneOf:
+                          - $ref: '#/components/schemas/Country404Schema'
+                          - $ref: '#/components/schemas/SpecificYearInfo404'
+                '400':
+                  description: 'Bad user input in params or query'
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/BadInputSchema'
+                '500':
+                  description: 'Internal Server Error!'
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/BadInputSchema'
 
     /country/{countryId}/time/start-year:
       get:
@@ -60,6 +131,24 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/StartYearValues'
+                '404':
+                  description: 'Country ID does not exists!'
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/Country404Schema'
+                '400':
+                  description: 'Bad user input in params or query'
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/BadInputSchema'
+                '500':
+                  description: 'Internal Server Error!'
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/BadInputSchema'
 
     /country/{countryId}/time/end-year:
       get:
@@ -80,8 +169,26 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/EndYearValues'
+                '404':
+                  description: 'Country ID does not exists!'
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/Country404Schema'
+                '400':
+                  description: 'Bad user input in params or query'
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/BadInputSchema'
+                '500':
+                  description: 'Internal Server Error!'
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/BadInputSchema'
       
-    /country/{countryId}/time/starty-and-end-year:
+    /country/{countryId}/time/start-and-end-year:
       get:
             summary: Starting and Ending year - Info
             description: Info about the starting and ending year of a country along with values and their respective categories
@@ -100,6 +207,24 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/StartAndEndYearSchema'
+                '404':
+                  description: 'Country ID does not exists!'
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/Country404Schema'
+                '400':
+                  description: 'Bad user input in params or query'
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/BadInputSchema'
+                '500':
+                  description: 'Internal Server Error!'
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/BadInputSchema'
       
     /country/{countryId}/time/all-years:
       get:
@@ -120,6 +245,24 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/AllYearsSchema'
+                '404':
+                  description: 'Country ID does not exists!'
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/Country404Schema'
+                '400':
+                  description: 'Bad user input in params or query'
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/BadInputSchema'
+                '500':
+                  description: 'Internal Server Error!'
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/BadInputSchema'
     
     /country/{countryId}/time/start-year/q:
       get:
@@ -157,6 +300,26 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/StartYearInfoFilteredSchema'
+                '404':
+                  description: 'Country ID/(Year/Years info) does not exists!'
+                  content:
+                    application/json:
+                      schema:
+                        oneOf:
+                          - $ref: '#/components/schemas/Country404Schema'
+                          - $ref: '#/components/schemas/StartYearInfoFilteredSchema'
+                '400':
+                  description: 'Bad user input in params or query'
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/BadInputSchema'
+                '500':
+                  description: 'Internal Server Error!'
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/BadInputSchema'
 
     /country/{countryId}/time/end-year/q:
       get:
@@ -193,8 +356,141 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/StartYearInfoFilteredSchema'
-      
+                                $ref: '#/components/schemas/EndYearInfoFilteredSchema'
+                '404':
+                  description: 'Country ID/(Year/Years info) does not exists!'
+                  content:
+                    application/json:
+                      schema:
+                        oneOf:
+                          - $ref: '#/components/schemas/Country404Schema'
+                          - $ref: '#/components/schemas/EndYearInfoFilteredSchema'
+                '400':
+                  description: 'Bad user input in params or query'
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/BadInputSchema'
+                '500':
+                  description: 'Internal Server Error!'
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/BadInputSchema'
+    
+    /country/{countryId}/time/start-and-end-year/q:
+      get:
+            summary: Starting and Ending year - Info (Filtered)
+            description: Info about the starting and ending year of a country along with values and their respective categories, with the given parameters.
+            parameters:
+                - name: countryId
+                  in: path
+                  required: true
+                  description: Country ID
+                  schema:
+                      type: string
+                      example: '619e44b754824b8370d646da'
+                - name: key
+                  in: query
+                  required: true
+                  description: Keywords for the search
+                  schema:
+                      type: array
+                      example: ['co2', 'sulphur']
+                - name: operationType
+                  description: <b>AND</b> search returns a result only if all the keywords are present in the category.<br/><br/> <b>OR</b> search returns multiple or single result even if a single instance of the key is found the category.
+                  in: query
+                  schema:
+                    type: string
+                    enum:
+                      - AND 
+                      - OR
+                      - and
+                      - or
+            responses:
+                '200':
+                    description: 'Successfull list of all the entries matching the given parameters for the starting and ending year.'
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/StartAndEndYearInfoFilteredSchema'
+                '404':
+                  description: 'Country ID/(Year/Years info) does not exists!'
+                  content:
+                    application/json:
+                      schema:
+                        oneOf:
+                          - $ref: '#/components/schemas/Country404Schema'
+                          - $ref: '#/components/schemas/StartAndEndYearInfoFilteredSchema'
+                '400':
+                  description: 'Bad user input in params or query'
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/BadInputSchema'
+                '500':
+                  description: 'Internal Server Error!'
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/BadInputSchema'
+
+    /country/{countryId}/time/all-years/q:
+      get:
+            summary: All years - Info (Filtered)
+            description: Info about the all years of a country along with values and their respective categories, with the given parameters.
+            parameters:
+                - name: countryId
+                  in: path
+                  required: true
+                  description: Country ID
+                  schema:
+                      type: string
+                      example: '619e44b754824b8370d646da'
+                - name: key
+                  in: query
+                  required: true
+                  description: Keywords for the search
+                  schema:
+                      type: array
+                      example: ['co2', 'sulphur']
+                - name: operationType
+                  description: <b>AND</b> search returns a result only if all the keywords are present in the category.<br/><br/> <b>OR</b> search returns multiple or single result even if a single instance of the key is found the category.
+                  in: query
+                  schema:
+                    type: string
+                    enum:
+                      - AND 
+                      - OR
+                      - and
+                      - or
+            responses:
+                '200':
+                    description: 'Successfull list of all the entries matching the given parameters for all the years.'
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AllYearsInfoFilteredSchema'
+                '404':
+                  description: 'Country ID/(Year/Years info) does not exists!'
+                  content:
+                    application/json:
+                      schema:
+                        oneOf:
+                          - $ref: '#/components/schemas/Country404Schema'
+                          - $ref: '#/components/schemas/AllYearsInfoFilteredSchema'
+                '400':
+                  description: 'Bad user input in params or query'
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/BadInputSchema'
+                '500':
+                  description: 'Internal Server Error!'
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/BadInputSchema' 
 components:
     schemas:
         Countries:
@@ -222,6 +518,23 @@ components:
                 endYear:
                     type: integer
                     example: 2014
+        
+        Country404Schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: 'Country not found!!'
+        
+        BadInputSchema:
+          type: object
+          properties:
+            errMessage:
+              type: string
+              example: 'Bad Input - Invalid input parameters!!'
+
+        InternalServerErrorSchema:
+          $ref: '#/components/schemas/BadInputSchema'
 
         CountryInfo:
           type: object
@@ -320,6 +633,14 @@ components:
               category:
                 type: string
 
+        FilteredRecords404:
+          type: object
+          properties:
+            message:
+              type: string
+            operationType:
+              type: string
+
         YearInfoFiltered:
           type: object
           properties:
@@ -328,7 +649,9 @@ components:
             keys:
               $ref: '#/components/schemas/KeyList'
             filteredRecords:
-              $ref: '#/components/schemas/FilteredRecords'
+              oneOf:
+                - $ref: '#/components/schemas/FilteredRecords'
+                - $ref: '#/components/schemas/FilteredRecords404'
 
         StartYearInfoFilteredSchema:
           allOf:
@@ -369,14 +692,32 @@ components:
                       year:
                         type: integer
                       filteredRecords:
-                        $ref: '#/components/schemas/FilteredRecords'
+                        oneOf:
+                          - $ref: '#/components/schemas/FilteredRecords'
+                          - $ref: '#/components/schemas/FilteredRecords404'
+                            
+        SpecificYearInfoFound:
+          type: object
+          properties:
+            year:
+              type: integer
+            categories:
+              $ref: '#/components/schemas/FilteredRecords'
+
+        SpecificYearInfo404:
+          type: object
+          properties:
+            year:
+              type: integer
+            message:
+              type: string
 
         SpecificYearSchema:
           allOf:
             - $ref: '#/components/schemas/CountryInfoYearValues'
             - type: object
               properties:
-                year:
-                  type: integer
-                categories:
-                  $ref: '#/components/schemas/FilteredRecords'
+                yearInfo:
+                  oneOf:
+                    - $ref: '#/components/schemas/SpecificYearInfoFound'
+                    - $ref: '#/components/schemas/SpecificYearInfo404'
