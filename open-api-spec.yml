@@ -81,12 +81,127 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/EndYearValues'
       
+    /country/{countryId}/time/starty-and-end-year:
+      get:
+            summary: Starting and Ending year - Info
+            description: Info about the starting and ending year of a country along with values and their respective categories
+            parameters:
+                - name: countryId
+                  in: path
+                  required: true
+                  description: Country ID 
+                  schema:
+                      type: string
+                      example: '619e44b754824b8370d646da'
+            responses:
+                '200':
+                    description: 'Successfull list of all countries with their available category list'
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/StartAndEndYearSchema'
+      
+    /country/{countryId}/time/all-years:
+      get:
+            summary: All years - Info
+            description: Info about all the years of a country along with values and their respective categories
+            parameters:
+                - name: countryId
+                  in: path
+                  required: true
+                  description: Country ID 
+                  schema:
+                      type: string
+                      example: '619e44b754824b8370d646da'
+            responses:
+                '200':
+                    description: 'Successfull list of all countries with their available category list'
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AllYearsSchema'
+    
+    /country/{countryId}/time/start-year/q:
+      get:
+            summary: Starting year - Info (Filtered)
+            description: Info about the starting year of a country along with values and their respective categories, with the given parameters.
+            parameters:
+                - name: countryId
+                  in: path
+                  required: true
+                  description: Country ID
+                  schema:
+                      type: string
+                      example: '619e44b754824b8370d646da'
+                - name: key
+                  in: query
+                  required: true
+                  description: Keywords for the search
+                  schema:
+                      type: array
+                      example: ['co2', 'sulphur']
+                - name: operationType
+                  description: <b>AND</b> search returns a result only if all the keywords are present in the category.<br/><br/> <b>OR</b> search returns multiple or single result even if a single instance of the key is found the category.
+                  in: query
+                  schema:
+                    type: string
+                    enum:
+                      - AND 
+                      - OR
+                      - and
+                      - or
+            responses:
+                '200':
+                    description: 'Successfull list of all the entries matching the given parameters for the starting year.'
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/StartYearInfoFilteredSchema'
+
+    /country/{countryId}/time/end-year/q:
+      get:
+            summary: Ending year - Info (Filtered)
+            description: Info about the ending year of a country along with values and their respective categories, with the given parameters.
+            parameters:
+                - name: countryId
+                  in: path
+                  required: true
+                  description: Country ID
+                  schema:
+                      type: string
+                      example: '619e44b754824b8370d646da'
+                - name: key
+                  in: query
+                  required: true
+                  description: Keywords for the search
+                  schema:
+                      type: array
+                      example: ['co2', 'sulphur']
+                - name: operationType
+                  description: <b>AND</b> search returns a result only if all the keywords are present in the category.<br/><br/> <b>OR</b> search returns multiple or single result even if a single instance of the key is found the category.
+                  in: query
+                  schema:
+                    type: string
+                    enum:
+                      - AND 
+                      - OR
+                      - and
+                      - or
+            responses:
+                '200':
+                    description: 'Successfull list of all the entries matching the given parameters for the ending year.'
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/StartYearInfoFilteredSchema'
+      
 components:
     schemas:
         Countries:
             type: array
             items: 
                 $ref: '#/components/schemas/Country'
+
         Country:
             type: object
             required:
@@ -183,4 +298,85 @@ components:
                   type: array
                   items:
                     $ref: '#/components/schemas/YearInfoSchema'
-          
+
+        KeyList:
+          type: array
+          items:
+            type: object
+            properties:
+              key: 
+                type: string
+              exists:
+                type: boolean
+
+        FilteredRecords:
+          type: array
+          items:
+            type: object
+            properties:
+              value: 
+                type: number
+                format: double
+              category:
+                type: string
+
+        YearInfoFiltered:
+          type: object
+          properties:
+            year:
+              type: integer
+            keys:
+              $ref: '#/components/schemas/KeyList'
+            filteredRecords:
+              $ref: '#/components/schemas/FilteredRecords'
+
+        StartYearInfoFilteredSchema:
+          allOf:
+            - $ref: '#/components/schemas/CountryInfoYearValues'
+            - type: object
+              properties:
+                startYearInfoFiltered:
+                  $ref: '#/components/schemas/YearInfoFiltered'
+
+        EndYearInfoFilteredSchema:
+          allOf:
+            - $ref: '#/components/schemas/CountryInfoYearValues'
+            - type: object
+              properties:
+                endYearInfoFiltered:
+                  $ref: '#/components/schemas/YearInfoFiltered'
+
+        StartAndEndYearInfoFilteredSchema:
+          allOf:
+            - $ref: '#/components/schemas/CountryInfoYearValues'
+            - type: object
+              properties:
+                startYearInfoFiltered:
+                  $ref: '#/components/schemas/YearInfoFiltered'
+                endYearInfoFiltered:
+                  $ref: '#/components/schemas/YearInfoFiltered'
+
+        AllYearsInfoFilteredSchema:
+          allOf:
+            - $ref: '#/components/schemas/CountryInfoYearValues'
+            - $ref: '#/components/schemas/KeyList'
+            - type: object
+              properties:
+                allYearsInfoFiltered:
+                  type: array
+                  items:
+                    properties:
+                      year:
+                        type: integer
+                      filteredRecords:
+                        $ref: '#/components/schemas/FilteredRecords'
+
+        SpecificYearSchema:
+          allOf:
+            - $ref: '#/components/schemas/CountryInfoYearValues'
+            - type: object
+              properties:
+                year:
+                  type: integer
+                categories:
+                  $ref: '#/components/schemas/FilteredRecords'
