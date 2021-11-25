@@ -1,0 +1,186 @@
+openapi: 3.0.0
+
+info:
+    title: Country Emissions Data - API
+    description: An API for providing country wise data on greenhouse emissions data.
+    version: 1.0.0
+
+servers:
+    - url: 'https://blue-sky-api-asg.herokuapp.com/api/v1'
+
+paths:
+    /countries:
+        get:
+            summary: List all countries
+            description: List of all countries with their name, startYear, endYear and unique _id
+            responses:
+                '200':
+                    description: 'Successful list of all countries'
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Countries'
+
+    /country/{countryId}:
+        get:
+            summary: Get the country info
+            description: List of all countries with their name, startYear, endYear, unique _id adn all the available categories
+            parameters:
+                - name: countryId
+                  in: path
+                  required: true
+                  description: Country ID 
+                  schema:
+                      type: string
+                      example: '619e44b754824b8370d646da'
+            responses:
+                '200':
+                    description: 'Successfull list of all countries with their available category list'
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/CountryInfo'
+
+    /country/{countryId}/time/start-year:
+      get:
+            summary: Starting year - Info
+            description: Info about the starting year of a country along with values and their respective categories
+            parameters:
+                - name: countryId
+                  in: path
+                  required: true
+                  description: Country ID 
+                  schema:
+                      type: string
+                      example: '619e44b754824b8370d646da'
+            responses:
+                '200':
+                    description: 'Successfull list of all countries with their available category list'
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/StartYearValues'
+
+    /country/{countryId}/time/end-year:
+      get:
+            summary: Ending year - Info
+            description: Info about the starting year of a country along with values and their respective categories
+            parameters:
+                - name: countryId
+                  in: path
+                  required: true
+                  description: Country ID 
+                  schema:
+                      type: string
+                      example: '619e44b754824b8370d646da'
+            responses:
+                '200':
+                    description: 'Successfull list of all countries with their available category list'
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/EndYearValues'
+      
+components:
+    schemas:
+        Countries:
+            type: array
+            items: 
+                $ref: '#/components/schemas/Country'
+        Country:
+            type: object
+            required:
+                - _id
+                - countryName
+                - startYear
+                - endYear
+            properties:
+                _id:
+                    type: string
+                    example: '619e44a4626c588e447efc0c'
+                countryName:
+                    type: string
+                    example: 'New Zealand'
+                startYear:
+                    type: integer
+                    example: 1990
+                endYear:
+                    type: integer
+                    example: 2014
+
+        CountryInfo:
+          type: object
+          properties:
+            _id:
+              type: string
+            countryName:
+              type: string
+            startYear:
+              type: integer
+            endYear:
+              type: integer
+            categories:
+              type: array
+              items:
+                type: string
+
+        YearInfoSchema:
+          type: object
+          properties:
+            year: 
+              type: integer
+            categories:
+              type: array
+              items:
+                type: object
+                properties:
+                  value: 
+                    type: number
+                    format: double
+                  category: 
+                      type: string
+          
+        CountryInfoYearValues:
+          type: object
+          properties:
+            _id:
+              type: string
+            countryName:
+              type: string
+        
+        StartYearValues:
+          allOf:
+            - $ref: '#/components/schemas/CountryInfoYearValues'
+            - type: object
+              properties:
+                startYearInfo:
+                  $ref: '#/components/schemas/YearInfoSchema'
+
+        EndYearValues:
+          allOf:
+            - $ref: '#/components/schemas/CountryInfoYearValues'
+            - type: object
+              properties:
+                endYearInfo:
+                  $ref: '#/components/schemas/YearInfoSchema'
+
+        StartAndEndYearSchema:
+          allOf:
+            - $ref: '#/components/schemas/CountryInfoYearValues'
+            - type: object
+              properties:
+                startYearInfo:
+                  $ref: '#/components/schemas/YearInfoSchema'
+                endYearInfo:
+                  $ref: '#/components/schemas/YearInfoSchema'
+
+        AllYearsSchema:
+          allOf:
+            - $ref: '#/components/schemas/CountryInfoYearValues'
+            - type: object
+              properties:
+                allYearsInfo:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/YearInfoSchema'
+          
