@@ -132,7 +132,7 @@ module.exports = {
 	getCountryYearInfo: async (req, res) => {
 		try {
 			const countryId = req.params.id
-			const country = await countryModel.findOne({ id: countryId }).select({
+			const country = await countryModel.findOne({ _id: countryId }).select({
 				countryName: 1,
 				categories: 1,
 				yearWiseValues: { $elemMatch: { year: req.params.year } }
