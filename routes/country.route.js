@@ -55,13 +55,16 @@ const checkQueryParams = (req, res, next) => {
 	}
 
 	// key array check (mandatory)
-	if (
-		!keys.includes('key') ||
-		!(typeof queryParams.key === 'object') ||
-		!queryParams.key.every((key) => key.length !== 0)
-	) {
+	if (!keys.includes('key')) {
 		res.status(400).send({ errMessage: 'Invalid query params' })
 		return
+	}
+
+	if (typeof keys.key === 'object') {
+		if (!queryParams.key.every((key) => key.length !== 0)) {
+			res.status(400).send({ errMessage: 'Invalid query params' })
+			return
+		}
 	}
 
 	// operationType value check 'OR', 'AND'
