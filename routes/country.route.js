@@ -67,6 +67,11 @@ const checkQueryParams = (req, res, next) => {
 		}
 	}
 
+	if (typeof keys.key === 'undefined') {
+		res.status(400).send({ errMessage: 'Invalid query params' })
+		return
+	}
+
 	// operationType value check 'OR', 'AND'
 	if (keys.length === 2) {
 		if (!keys.includes('operationType')) {
