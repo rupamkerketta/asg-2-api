@@ -307,14 +307,10 @@ module.exports = {
 					filteredRecords.startYearInfoFiltered.filteredRecords.length ===
 					undefined
 				) {
-					res.status(404).send({
-						...filteredRecords
-					})
+					res.status(404).send(filteredRecords)
 					return
 				} else {
-					res.send({
-						...filteredRecords
-					})
+					res.send(filteredRecords)
 					return
 				}
 			case 'end-year':
@@ -332,14 +328,10 @@ module.exports = {
 					filteredRecords.endYearInfoFiltered.filteredRecords.length ===
 					undefined
 				) {
-					res.status(404).send({
-						...filteredRecords
-					})
+					res.status(404).send(filteredRecords)
 					return
 				} else {
-					res.send({
-						...filteredRecords
-					})
+					res.send(filteredRecords)
 					return
 				}
 			case 'start-and-end-year':
