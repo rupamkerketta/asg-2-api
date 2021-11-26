@@ -6,7 +6,9 @@ Live version: <https://blue-sky-api-asg.herokuapp.com/>
 
 ## openAPI Spec
 
-* Download (yml format) : <https://blue-sky-api-asg.herokuapp.com/res/open-api-spec>
+* API documentation on SwaggerHub: <https://app.swaggerhub.com/apis-docs/rupamkerketta/Greenhouse_Emissions/1.0.0>
+
+* Download (yml format): <https://blue-sky-api-asg.herokuapp.com/res/open-api-spec>
 
 * Preview (json format): <https://blue-sky-api-asg.herokuapp.com/res/open-api-spec-json>
 

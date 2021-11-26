@@ -1,7 +1,7 @@
 openapi: 3.0.0
 
 info:
-    title: Country Emissions Data - API
+    title: Country Greenhouse Emissions Data - API
     description: An API for providing country wise data on greenhouse emissions.
     contact:
       name: 'Rupam Kerketta'
