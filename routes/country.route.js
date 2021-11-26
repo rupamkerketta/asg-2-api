@@ -9,11 +9,7 @@ const countryCTRL = require('../controllers/country.controller')
 // ID validation middleware
 const isValidId = (req, res, next) => {
 	const id = req.params.id
-	if (
-		!isHexadecimal(id) ||
-		!id.length === 24 ||
-		!mongoose.Types.ObjectId.isValid(id)
-	) {
+	if (!isHexadecimal(id) || !id.length === 24) {
 		res.status(400).send({ errMessage: 'Bad input - Invalid Id' })
 		return
 	}
