@@ -20,6 +20,7 @@
 	"homepage": "https://github.com/rupamkerketta/asg-2-api#readme",
 	"dependencies": {
 		"express": "^4.17.1",
+		"js-yaml": "^4.1.0",
 		"mongoose": "^6.0.13",
 		"validator": "^13.7.0"
 	},

@@ -9,6 +9,9 @@ if (process.env.NODE_ENV !== 'production') {
 
 const express = require('express')
 const app = express()
+const yaml = require('js-yaml')
+const path = require('path')
+const fs = require('fs')
 
 const PORT = process.env.PORT || 5000
 
@@ -27,6 +30,28 @@ app.get('/', (req, res) => {
 	} catch (err) {
 		console.log(err)
 		res.status(500).send({ message: 'Internal Server Error !!' })
+	}
+})
+
+// openAPI spec
+app.get('/res/open-api-spec', (req, res) => {
+	try {
+		res.sendFile(path.resolve('./open-api-spec.yml'))
+	} catch (err) {
+		console.log(err)
+		res.status(500).send({ message: 'Internal Server Error!!' })
+	}
+})
+
+app.get('/res/open-api-spec-json', (req, res) => {
+	try {
+		const doc = yaml.load(
+			fs.readFileSync(path.resolve('./open-api-spec.yml'), 'utf8')
+		)
+		res.send(doc)
+	} catch (err) {
+		console.log(err)
+		res.status(500).send({ message: 'Internal Server Error!!' })
 	}
 })
 
