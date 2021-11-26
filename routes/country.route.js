@@ -60,14 +60,18 @@ const checkQueryParams = (req, res, next) => {
 		return
 	}
 
-	if (typeof keys.key === 'object') {
-		if (!queryParams.key.every((key) => key.length !== 0)) {
-			res.status(400).send({ errMessage: 'Invalid query params' })
-			return
+	if (typeof queryParams.key === 'object') {
+		for (let i = 0; i < queryParams.key.length; i++) {
+			if (queryParams.key[i] === '') {
+				res.status(400).send({
+					errMessage: 'Invalid query params, key cannot be an empty string!'
+				})
+				return
+			}
 		}
 	}
 
-	if (typeof keys.key === 'undefined') {
+	if (queryParams.key === '') {
 		res.status(400).send({ errMessage: 'Invalid query params' })
 		return
 	}
