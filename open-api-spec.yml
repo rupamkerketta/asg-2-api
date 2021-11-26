@@ -2,11 +2,16 @@ openapi: 3.0.0
 
 info:
     title: Country Emissions Data - API
-    description: An API for providing country wise data on greenhouse emissions data.
+    description: An API for providing country wise data on greenhouse emissions.
+    contact:
+      name: 'Rupam Kerketta'
+      url: 'https://rupamkerketta.com'
+      email: 'dev.kerkettarupam@gmail.com'
     version: 1.0.0
 
 servers:
     - url: 'https://blue-sky-api-asg.herokuapp.com/api/v1'
+      description: 'Application hosted on Heroku Platform'
 
 paths:
     /countries:
@@ -63,12 +68,12 @@ paths:
                   content:
                     application/json:
                       schema:
-                        $ref: '#/components/schemas/BadInputSchema'
+                        $ref: '#/components/schemas/InternalServerErrorSchema'
 
     /country/{countryId}/year-info/{year}:
         get:
             summary: Get the country info with a specific year
-            description: Year information if exists for all the categories for the given country id.
+            description: Year information for all the categories for the given country id.
             parameters:
                 - name: countryId
                   in: path
@@ -86,7 +91,7 @@ paths:
                     example: 2011
             responses:
                 '200':
-                    description: 'Successfull list of all countries with their available category list'
+                    description: 'Country info year wise, if exists'
                     content:
                         application/json:
                             schema:
@@ -99,6 +104,7 @@ paths:
                         oneOf:
                           - $ref: '#/components/schemas/Country404Schema'
                           - $ref: '#/components/schemas/SpecificYearInfo404'
+                          
                 '400':
                   description: 'Bad user input in params or query'
                   content:
@@ -153,7 +159,7 @@ paths:
     /country/{countryId}/time/end-year:
       get:
             summary: Ending year - Info
-            description: Info about the starting year of a country along with values and their respective categories
+            description: Info about the ending year of a country along with values and their respective categories
             parameters:
                 - name: countryId
                   in: path
@@ -444,7 +450,7 @@ paths:
     /country/{countryId}/time/all-years/q:
       get:
             summary: All years - Info (Filtered)
-            description: Info about the all years of a country along with values and their respective categories, with the given parameters.
+            description: Info about all the years of a country along with values and their respective categories, with the given parameters.
             parameters:
                 - name: countryId
                   in: path
@@ -542,29 +548,42 @@ components:
               example: 'Bad Input - Invalid input parameters!!'
 
         InternalServerErrorSchema:
-          $ref: '#/components/schemas/BadInputSchema'
+          type: object
+          properties:
+            errMessage:
+              type: string
+              example: 'Internal Server Error!!'
 
         CountryInfo:
           type: object
           properties:
             _id:
               type: string
+              example: '619e44b754824b8370d646da'
             countryName:
               type: string
+              example: 'New Zealand'
             startYear:
               type: integer
+              example: 1990
             endYear:
               type: integer
+              example: 2011
             categories:
               type: array
               items:
                 type: string
+              example: [
+                'carbon_dioxide_co2_emissions_without_land_use_land_use_change_and_fore...',
+                'greenhouse_gas_ghgs_emissions_including_indirect_co2_without_lulucf_in...'
+              ]
 
         YearInfoSchema:
           type: object
           properties:
             year: 
               type: integer
+              example: 1990
             categories:
               type: array
               items:
@@ -573,16 +592,20 @@ components:
                   value: 
                     type: number
                     format: double
+                    example: 2122.122
                   category: 
                       type: string
+                      example: 'carbon_dioxide_co2_emissions_without_land_use_land_use_change_and_fore...'
           
         CountryInfoYearValues:
           type: object
           properties:
             _id:
               type: string
+              example: '619e44b754824b8370d646da'
             countryName:
               type: string
+              example: 'New Zealand'
         
         StartYearValues:
           allOf:
@@ -638,8 +661,10 @@ components:
               value: 
                 type: number
                 format: double
+                example: 211.11
               category:
                 type: string
+                example: 'carbon_dioxide_co2_emissions_without_land_use_land_use_change_and_fore...'
 
         FilteredRecords404:
           type: object
@@ -654,6 +679,7 @@ components:
           properties:
             year:
               type: integer
+              example: 1990
             keys:
               $ref: '#/components/schemas/KeyList'
             filteredRecords:
@@ -699,6 +725,7 @@ components:
                     properties:
                       year:
                         type: integer
+                        example: 1990
                       filteredRecords:
                         oneOf:
                           - $ref: '#/components/schemas/FilteredRecords'
@@ -709,6 +736,7 @@ components:
           properties:
             year:
               type: integer
+              example: 1990
             categories:
               $ref: '#/components/schemas/FilteredRecords'
 

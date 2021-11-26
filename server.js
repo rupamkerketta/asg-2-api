@@ -20,7 +20,10 @@ app.use(express.json())
 
 app.get('/', (req, res) => {
 	try {
-		res.send({ message: 'Blue Sky Analytics' })
+		res.send({
+			message: 'Blue Sky Analytics- Assignment 2 (api)',
+			author: 'Rupam Kerketta'
+		})
 	} catch (err) {
 		console.log(err)
 		res.status(500).send({ message: 'Internal Server Error !!' })
